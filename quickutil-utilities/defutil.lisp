@@ -441,8 +441,9 @@ NIL, then emit all utility source code."
              (when emit-in-package-form
                (write-string "(in-package #:quickutil)")) (terpri)
              (write-string "(when (boundp '*utilities*)") (terpri)
-             (format t     "  (setf *utilities* (union *utilities* '~S)))~%"
-                     load-order-symbols)
+             (let ((*print-length* nil))
+               (format t     "  (setf *utilities* (union *utilities* '~S)))~%"
+                       load-order-symbols))
              
              (dolist (util load-order)
                (when util
@@ -459,7 +460,8 @@ NIL, then emit all utility source code."
              (let ((*print-case* :downcase))
                (write-string "(eval-when (:compile-toplevel :load-toplevel :execute)")
                (terpri)
-               (format t "  (export '~A))~%" (compute-provided-symbols))))))))))
+               (let ((*print-length* nil))
+                 (format t "  (export '~A))~%" (compute-provided-symbols)))))))))))
 
 (defun pretty-print-utility-code (code-string &optional stream)
   "Pretty print utility code string CODE-STRING to stream STREAM."
