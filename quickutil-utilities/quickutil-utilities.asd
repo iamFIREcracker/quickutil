@@ -31,6 +31,7 @@
                              (:file "trees")
                              (:file "symbols")
                              (:file "language")
+                             (:file "anaphoric")
                              (:file "constants")
                              (:file "control")
                              (:file "hash-tables")
