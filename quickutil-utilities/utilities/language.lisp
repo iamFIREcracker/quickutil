@@ -67,6 +67,99 @@
        ,@body))
   %%%)
 
+(defutil bnd* (:version (1 . 0)
+               :category (language binding))
+  "Like LET*, but more powerful.
+
+Use a symbol as the name of the binding to expand to a standard LET:
+
+(bnd* (x
+       (y (list 1 2 3)))
+  (list x y)) ≡
+(let (x)
+  (let ((y (list 1 2 3)))
+    (list x y)))
+
+Use a list as the name of the binding to enable special type of expansions.
+
+If the CAR of the list is the symbol VALUES, expand to MULTIPLE-VALUE-BIND
+call:
+
+(bnd* (((values f r) (floor 130 11)))
+  (list f r)) ≡
+(multiple-value-bind (f r)
+     (floor 130 11)
+   (list f r))
+
+If the CAR of the list is the symbol WITH-SLOTS, expand to a WITH-SLOTS call:
+
+(bnd* (((with-slots x y) thing))
+  (incf x) (incf y))
+≡
+(with-slots (x y) thing
+  (incf x) (incf y))
+
+Otherwise, if the name of the binding is a list but none of the above applies,
+BND* will expand to a DESTRUCTURING-BIND call:
+
+(bnd* (((a b) '(1 2)))
+  (list a b))
+≡
+(destructuring-bind (a b)
+    '(1 2)
+  (list a b))"
+  #>%%%>
+  (defmacro bnd* (bindings &body body)
+    %%DOC
+    (labels ((mklist (x) (if (atom x) (list x) x))
+             (expand (bb)
+               (cond ((null bb) (signal 'unexpected))
+                     (t (let* ((b (mklist (car bb)))
+                               (var (car b))
+                               (val (cadr b)))
+                          (cond ((symbolp var)
+                                 `(let (,b)
+                                    ,@(if (rest bb)
+                                        (list (expand (rest bb)))
+                                        body)))
+                                ((eq (car var) 'values)
+                                 `(multiple-value-bind ,(rest var) ,val
+                                    ,@(if (rest bb)
+                                        (list (expand (rest bb)))
+                                        body)))
+                                ((eq (car var) 'with-slots)
+                                 `(with-slots ,(rest var) ,val
+                                    ,@(if (rest bb)
+                                        (list (expand (rest bb)))
+                                        body)))
+                                (t `(destructuring-bind ,@b
+                                      ,@(if (rest bb)
+                                          (list (expand (rest bb)))
+                                          body)))))))))
+      (expand bindings)))
+  %%%)
+#+#:excluded (bnd* (y
+                     (x (list 1 2 3))
+                     ((a b c) x)
+                     ((values d e f) (values 4 5 6)))
+               (list y x a b c d e f))
+
+
+(defutil bnd1 (:version (1 . 0)
+               :depends-on (bnd*)
+               :category (language binding))
+  "Equivalent to BND* with one binding."
+  #>%%%>
+  (defmacro bnd1 (binding &body body)
+    %%DOC
+    `(bnd* (,binding)
+       ,@body))
+  %%%)
+#+#:excluded (bnd1 y y)
+#+#:excluded (bnd1 (y (list 1 2 3)) y)
+#+#:excluded (bnd1 ((a b c) (list 1 2 3)) (list a b c))
+#+#:excluded (bnd1 ((values a b c) (values 1 2 3)) (list a b c))
+
 (defutil defaccessor (:version (1 . 0)
                       :depends-on (parse-body with-gensyms)
                       :provides (defaccessor accesses)
