@@ -32,6 +32,7 @@
                              (:file "symbols")
                              (:file "language")
                              (:file "anaphoric")
+                             (:file "printing")
                              (:file "constants")
                              (:file "control")
                              (:file "hash-tables")
