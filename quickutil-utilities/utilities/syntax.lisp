@@ -31,3 +31,12 @@ to `*package*`. Example call:
            ,function
            ,(not (consp chars)))))))
   %%%)
+
+(defutil fn (:version (1 . 0)
+             :category syntax)
+  "Like LAMBDA, but 4 characters shorter."
+  #>%%%>
+  (defmacro fn (name lambda-list &body body)
+    %%DOC
+    `(lambda ,name ,lambda-list ,@body))
+  %%%)
