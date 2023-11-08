@@ -49,5 +49,5 @@
             ((not (cdr forms)) (car forms))
             (t (let1 car (car forms)
                  `(aif ,car
-                    (aand ,(cdr forms))))))))
+                    (aand ,@(cdr forms))))))))
   %%%)
