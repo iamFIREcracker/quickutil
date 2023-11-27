@@ -90,7 +90,7 @@ tuples. Equivalent to `unzip`."
       :for j :from 0
       :collect (list j i)))
   %%%)
-  
+
 (defutil flatten-once (:version (1 . 0)
                        :category lists)
   "Flatten `list` once."
@@ -99,7 +99,7 @@ tuples. Equivalent to `unzip`."
     %%DOC
     (loop :for x :in list
           :if (listp x)
-            :append x 
+            :append x
           :else
             :collect x))
   %%%)
