@@ -372,3 +372,16 @@ Example
           :while list
           :do (pop list)))
   %%%)
+
+
+(defutil mklist (:version (1 . 0)
+                 :category lists)
+  "If not already a list, mklist will return a
+   new list with its param as element"
+  #>%%%>
+  (defun mklist (obj)
+    %%DOC
+    (if (listp obj)
+      obj
+      (list obj)))
+  %%%)
