@@ -402,3 +402,27 @@ Example
     %%DOC
     `(loop :for ,var :in ,list do ,@body ,@(when result? `(:finally (return ,result)))))
   %%%)
+
+(defutil dolists (:version (1 . 0)
+                  :category lists)
+  "Like DOLIST, except it allows you to iterate over multiple lists in parallel.
+
+  > (let ((list '(1 2 3 4)))
+      (dolists ((x1 list)
+                (x2 (cdr list)))
+        (print (list x1 x2))))
+  ;; (1 2)
+  ;; (2 3)
+  ;; (3 4)
+  NIL
+  "
+  #>%%%>
+  (defmacro dolists (((var1 list1) (var2 list2) &rest var-list-specs) &body body)
+    %%DOC
+    `(loop
+       :for ,var1 :in ,list1 :for ,var2 :in ,list2
+       ,@(loop for (var list) in var-list-specs
+               collect 'FOR collect var collect 'IN collect list)
+       do ,@body))
+  %%%)
+
