@@ -385,3 +385,20 @@ Example
       obj
       (list obj)))
   %%%)
+
+(defutil dolist+ (:version (1 . 0)
+                  :category lists)
+  "Like DOLIST, except it supports destructuring of `var`.
+
+  > (let ((list '((1 a) (2 b))))
+      (dolist+ ((a b) list :ret)
+        (print (list a b))))
+  ;;(1 A)
+  ;;(2 B)
+  :RET
+  "
+  #>%%%>
+  (defmacro dolist+ ((var list &optional (result nil result?)) &body body)
+    %%DOC
+    `(loop :for ,var :in ,list do ,@body ,@(when result? `(:finally (return ,result)))))
+  %%%)
