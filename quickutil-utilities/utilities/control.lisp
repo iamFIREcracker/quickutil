@@ -1,5 +1,39 @@
 (in-package #:quickutil-utilities.utilities)
 
+(defutil dorange (:version (1 . 0)
+                  :category (language control))
+  "Binds `var` to all the distinct values in the range [`from`, `to`[, with
+`step` step (note: `to` is excluded), and runs `body` inside that
+lexical environmnet."
+  #>%%%>
+  (defmacro dorange ((var from to &optional (step 1) (result nil result?)) &body body)
+    %%DOC
+    (let ((step-g (gensym "step"))
+          (to-g (gensym "to")))
+      `(do* ((,step-g ,step)
+             (,to-g ,to)
+             (,var ,from (+ ,var ,step-g)))
+         ((if (>= ,step-g 0) (>= ,var ,to-g) (<= ,var ,to-g))
+          ,@(when result? `(,result)))
+         ,@body)))
+  %%%)
+
+(defutil dorangei (:version (1 . 0)
+                   :category (language control))
+  "Like DORANGE, `to` is inclusive (the range is: [`from`, `to`])."
+  #>%%%>
+  (defmacro dorangei ((var from to &optional (step 1) (result nil result?)) &body body)
+    %%DOC
+    (let ((step-g (gensym "step"))
+          (to-g (gensym "to")))
+      `(do* ((,step-g ,step)
+             (,to-g ,to)
+             (,var ,from (+ ,var ,step-g)))
+         ((if (>= ,step-g 0) (> ,var ,to-g) (< ,var ,to-g))
+          ,@(when result? `(,result)))
+         ,@body)))
+  %%%)
+
 (defutil until (:version (1 . 0)
                 :category (language control))
   "Executes `body` until `expression` is true."
