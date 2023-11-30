@@ -56,6 +56,15 @@ lexical environmnet."
        ,@body))
   %%%)
 
+(defutil repeat (:version (1 . 0)
+                 :category (language control))
+  "Runs BODY N times."
+  #>%%%>
+  (defmacro repeat (n &body body)
+    %%DOC
+    `(loop repeat ,n do ,@body))
+  %%%)
+
 (defutil recursively (:version (1 . 0)
                       :depends-on let1
                       :category (language misc))
