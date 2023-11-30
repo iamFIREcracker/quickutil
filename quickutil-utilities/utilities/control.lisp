@@ -65,6 +65,79 @@ lexical environmnet."
     `(loop repeat ,n do ,@body))
   %%%)
 
+(defutil looping (:version (1 . 0)
+                  :depends-on (with-gensyms symb)
+                  :category (language misc))
+  "Run `body` in an environment where the symbols COLLECT!, SUM!, and
+COUNT! are bound to functions that can be used to collect, sum, or count things
+respectively.
+
+Mixed usage of COLLECT!, SUM!, and COUNT! is not supported
+
+Examples:
+
+  (looping
+    (dotimes (i 5)
+      (if (oddp i)
+        (collect! i))))
+  =>
+  (1 3)
+
+  (looping
+    (dotimes (i 5)
+      (if (oddp i)
+        (sum! i))))
+  =>
+  4
+
+  (looping
+    (dotimes (i 5)
+      (count! (oddp i))))
+  =>
+  2
+
+  (looping
+    (dotimes (i 5)
+      (sum! i)
+      (count! (oddp i))))
+  ;; Signals an ERROR: Cannot use COUNT! together with SUM!
+  "
+  #>%%%>
+  (defmacro looping (&body body)
+    %%DOC
+    (with-gensyms (loop-type result)
+      `(let (,loop-type ,result)
+         (flet ((,(symb "COLLECT!") (item)
+                 (if (and ,loop-type (not (eql ,loop-type 'collect!)))
+                   (error "Cannot use COLLECT! together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'collect! ,result nil))
+                     (push item ,result)
+                     item)))
+                (,(symb "SUM!") (item)
+                 (if (and ,loop-type (not (eql ,loop-type 'sum!)))
+                   (error "Cannot use SUM! together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'sum! ,result 0))
+                     (incf ,result item)
+                     item)))
+                (,(symb "COUNT!") (item)
+                 (if (and ,loop-type (not (eql ,loop-type 'count!)))
+                   (error "Cannot use COUNT! together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'count! ,result 0))
+                     (when item
+                       (incf ,result)
+                       item)))))
+           ,@body)
+         (if (eql ,loop-type 'collect!)
+           (nreverse ,result)
+           ,result))))
+  %%%)
+
 (defutil recursively (:version (1 . 0)
                       :depends-on let1
                       :category (language misc))
