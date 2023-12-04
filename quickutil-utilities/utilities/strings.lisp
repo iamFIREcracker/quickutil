@@ -59,3 +59,13 @@ SEPARATOR."
     %%DOC
     (separated-string-append* " " strings))
   %%%)
+
+(defutil string-starts-with-p (:version (1 . 0)
+                               :category strings)
+  "Returns T if the first few characters of `s` are equalt to `prefix`."
+  #>%%%>
+  (defun string-starts-with-p (prefix s)
+    %%DOC
+    (and (<= (length prefix) (length s))
+         (string= prefix s :end2 (length prefix))))
+  %%%)
