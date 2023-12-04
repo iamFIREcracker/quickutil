@@ -43,6 +43,7 @@
                              (:file "synonyms")
                              (:file "io")
                              (:file "syntax")
+                             (:file "abbr")
                              (:module split-sequence
                               :serial t
                               :components ((:file "split-sequence")))

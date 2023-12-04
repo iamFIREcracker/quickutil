@@ -155,12 +155,3 @@ In `body` the symbol `recur` will be bound to the function for recurring."
                     ,@body))
            (,recur ,@values)))))
   %%%)
-
-(defutil if-not (:version (1 . 0)
-                 :category control)
-  "Like IF, except TEST gets wrapped inside NOT."
-  #>%%%>
-  (defmacro if-not (test then &optional else)
-    %%DOC
-    `(if (not ,test) ,then ,else))
-  %%%)
