@@ -67,11 +67,12 @@ lexical environmnet."
 (defutil looping (:version (1 . 0)
                   :depends-on (with-gensyms symb)
                   :category (language misc))
-  "Run `body` in an environment where the symbols COLLECT!, SUM!, and
-COUNT! are bound to functions that can be used to collect, sum, or count things
-respectively.
+  "Run `body` in an environment where the symbols COLLECT!, APPEND!, SUM!,
+COUNT!, MINIMIZE!, and MAXIMIZE! are bound to functions that can be used to
+collect / append, sum, count, minimize or maximize things respectively.
 
-Mixed usage of COLLECT!, SUM!, and COUNT! is not supported
+Mixed usage of COLLECT!/APPEND!, SUM!, COUNT!, MINIMIZE! and MAXIMIZE! is not
+supported.
 
 Examples:
 
@@ -107,12 +108,22 @@ Examples:
     (with-gensyms (loop-type result)
       `(let (,loop-type ,result)
          (flet ((,(symb "COLLECT!") (item)
-                 (if (and ,loop-type (not (eql ,loop-type 'collect!)))
+                 (if (and ,loop-type (and (not (eql ,loop-type 'collect!))
+                                          (not (eql ,loop-type 'append!)) ))
                    (error "Cannot use COLLECT! together with ~A" ,loop-type)
                    (progn
                      (if (not ,loop-type)
                        (setf ,loop-type 'collect! ,result nil))
                      (push item ,result)
+                     item)))
+                (,(symb "APPEND!") (item)
+                 (if (and ,loop-type (and (not (eql ,loop-type 'collect!))
+                                          (not (eql ,loop-type 'append!)) ))
+                   (error "Cannot use APPEND! together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'append! ,result nil))
+                     (setf ,result (append ,result item))
                      item)))
                 (,(symb "SUM!") (item)
                  (if (and ,loop-type (not (eql ,loop-type 'sum!)))
@@ -130,9 +141,23 @@ Examples:
                        (setf ,loop-type 'count! ,result 0))
                      (when item
                        (incf ,result)
-                       item)))))
+                       item))))
+                (,(symb "MINIMIZE!") (item)
+                 (if (and ,loop-type (not (eql ,loop-type 'minimize!)))
+                   (error "Cannot use MINIMIZE1 together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'minimize! ,result item))
+                     (setf ,result (min ,result item)))))
+                (,(symb "MAXIMIZE!") (item)
+                 (if (and ,loop-type (not (eql ,loop-type 'maximize!)))
+                   (error "Cannot use MAXIMIZE! together with ~A" ,loop-type)
+                   (progn
+                     (if (not ,loop-type)
+                       (setf ,loop-type 'maximize! ,result item))
+                     (setf ,result (max ,result item))))))
            ,@body)
-         (if (eql ,loop-type 'collect!)
+         (if (eq ,loop-type 'collect!)
            (nreverse ,result)
            ,result))))
   %%%)
