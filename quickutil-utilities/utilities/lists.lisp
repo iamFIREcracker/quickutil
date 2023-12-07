@@ -81,12 +81,22 @@ tuples. Equivalent to `unzip`."
 
 (defutil enumerate (:version (1 . 0)
                     :category lists)
-  "Equivalent to `(zip (iota (length list)) list)`."
+  "Equivalent to `(zip (iota (length x)) x)`."
   #>%%%>
-  (defun enumerate (list)
+  (defgeneric enumerate (x)
+    (:documentation %%DOC))
+
+  (defmethod enumerate ((x list))
     %%DOC
     (loop
-      :for i :in list
+      :for i :in x
+      :for j :from 0
+      :collect (list j i)))
+
+  (defmethod enumerate ((x array))
+    %%DOC
+    (loop
+      :for i :across x
       :for j :from 0
       :collect (list j i)))
   %%%)
