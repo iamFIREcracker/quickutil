@@ -62,10 +62,20 @@ SEPARATOR."
 
 (defutil string-starts-with-p (:version (1 . 0)
                                :category strings)
-  "Returns T if the first few characters of `s` are equalt to `prefix`."
+  "Returns T if the first few characters of `s` are equal to `prefix`."
   #>%%%>
   (defun string-starts-with-p (prefix s)
     %%DOC
     (and (<= (length prefix) (length s))
          (string= prefix s :end2 (length prefix))))
+  %%%)
+
+(defutil string-ends-with-p (:version (1 . 0)
+                             :category strings)
+  "Returns T if the last few characters of `s` are equal to `suffix`."
+  #>%%%>
+  (defun string-ends-with-p (suffix s)
+    %%DOC
+    (and (<= (length suffix) (length s))
+         (string= suffix s :start2 (- (length s) (length suffix)))))
   %%%)
