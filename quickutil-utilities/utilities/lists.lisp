@@ -436,3 +436,17 @@ Example
        do ,@body))
   %%%)
 
+
+(defutil dolistl (:version (1 . 0)
+                  :category lists)
+  "Like DOLIST, except:
+
+- `var` is bound to successive sublists of `list` (similar to MAPL)
+- `var` can lambda-list (similar to DOLIST+)
+"
+  #>%%%>
+  (defmacro dolistl ((var list &optional (result nil result?)) &body body)
+    %%DOC
+    `(loop :for ,var :on ,list do ,@body ,@(when result? `(:finally (return ,result)))))
+  %%%)
+
