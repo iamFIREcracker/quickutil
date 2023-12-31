@@ -112,8 +112,10 @@ Examples:
                        ((symbolp body) (find body
                                              '(collect! append! sum! multiply! count! minimize! maximize!)
                                              :test #'string=))
-                       ((consp body) (or (extract-loop-type (car body))
-                                         (extract-loop-type (cdr body))))))
+                       ((consp body) (unless (and (symbolp (car body))
+                                                  (string= (car body) 'looping))
+                                       (or (extract-loop-type (car body))
+                                           (extract-loop-type (cdr body)))))))
                (init-result (loop-type)
                  (ecase loop-type
                    ((collect! append! minimize! maximize) nil)
