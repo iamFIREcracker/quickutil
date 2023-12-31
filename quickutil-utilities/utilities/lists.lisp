@@ -396,23 +396,6 @@ Example
       (list obj)))
   %%%)
 
-(defutil dolist+ (:version (1 . 0)
-                  :category lists)
-  "Like DOLIST, except it supports destructuring of `var`.
-
-  > (let ((list '((1 a) (2 b))))
-      (dolist+ ((a b) list :ret)
-        (print (list a b))))
-  ;;(1 A)
-  ;;(2 B)
-  :RET
-  "
-  #>%%%>
-  (defmacro dolist+ ((var list &optional (result nil result?)) &body body)
-    %%DOC
-    `(loop :for ,var :in ,list do ,@body ,@(when result? `(:finally (return ,result)))))
-  %%%)
-
 (defutil dolists (:version (1 . 0)
                   :category lists)
   "Like DOLIST, except it allows you to iterate over multiple lists in parallel.
@@ -433,7 +416,7 @@ Example
        :for ,var1 :in ,list1 :for ,var2 :in ,list2
        ,@(loop for (var list) in var-list-specs
                collect 'FOR collect var collect 'IN collect list)
-       do ,@body))
+       :do ,@body))
   %%%)
 
 
@@ -442,7 +425,7 @@ Example
   "Like DOLIST, except:
 
 - `var` is bound to successive sublists of `list` (similar to MAPL, LOOP..ON)
-- `var` can lambda-list (similar to DOLIST+)
+- `var` can be a lambda-list
 "
   #>%%%>
   (defmacro dosublists ((var list &optional (result nil result?)) &body body)

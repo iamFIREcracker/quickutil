@@ -141,17 +141,20 @@ defined by the equivalence relation `equiv`."
   %%%)
 
 (defutil doseq (:version (1 . 0)
+                :depends-on once-only
                 :category sequences)
   "Iterate across the sequence `seq`, binding the variable `var` to
 each element of the sequence and executing `body`. Return the value
-`return` from the iteration form."
+`return` from the iteration form.
+
+Note: DOSEQ expands to a LOOP form, so `var` can either be a symbol, or a
+lambda-list
+"
   #>%%%>
-  (defmacro doseq ((var seq &optional return) &body body)
+  (defmacro doseq ((var seq &optional (result nil result?)) &body body)
     %%DOC
-    `(block nil
-       (map nil #'(lambda (,var)
-                    (tagbody
-                       ,@body))
-            ,seq)
-       ,return))
+    (once-only (seq)
+      `(etypecase ,seq
+         (list (loop :for ,var :in ,seq :do ,@body ,@(when result? `(:finally (return ,result)))))
+         (sequence (loop :for ,var :across ,seq :do ,@body ,@(when result? `(:finally (return ,result))))))))
   %%%)
