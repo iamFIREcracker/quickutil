@@ -68,11 +68,12 @@ lexical environmnet."
                   :depends-on (with-gensyms symb)
                   :category (language misc))
   "Run `body` in an environment where the symbols COLLECT!, APPEND!, SUM!,
-COUNT!, MINIMIZE!, and MAXIMIZE! are bound to functions that can be used to
-collect / append, sum, count, minimize or maximize things respectively.
+MULTIPLY!, COUNT!, MINIMIZE!, and MAXIMIZE! are bound to functions that can be
+used to collect / append, sum, multiply, count, minimize or maximize things
+respectively.
 
-Mixed usage of COLLECT!/APPEND!, SUM!, COUNT!, MINIMIZE! and MAXIMIZE! is not
-supported.
+Mixed usage of COLLECT!/APPEND!, SUM!, MULTIPLY!, COUNT!, MINIMIZE! and
+MAXIMIZE! is not supported.
 
 Examples:
 
@@ -109,14 +110,15 @@ Examples:
       (labels ((extract-loop-type (body)
                  (cond ((null body) nil)
                        ((symbolp body) (find body
-                                             '(collect! append! sum! count! minimize! maximize!)
+                                             '(collect! append! sum! multiply! count! minimize! maximize!)
                                              :test #'string=))
                        ((consp body) (or (extract-loop-type (car body))
                                          (extract-loop-type (cdr body))))))
                (init-result (loop-type)
                  (ecase loop-type
-                   ((collect! append! minimize! maximixe!) nil)
-                   ((sum! count!) 0))))
+                   ((collect! append! minimize! maximize) nil)
+                   ((sum! count!) 0)
+                   ((multiply!) 1))))
         (let* ((loop-type-value (extract-loop-type body))
                (result-value (init-result loop-type-value)))
           `(let* ((,loop-type ',loop-type-value)
@@ -148,6 +150,10 @@ Examples:
                          (progn
                            (incf ,result item)
                            item)))
+                      (,(symb "MULTIPLY!") (item)
+                       (if (and ,loop-type (not (eql ,loop-type 'multiply!)))
+                         (error "Cannot use MULTIPLY! together with ~A" ,loop-type)
+                         (setf ,result (* ,result item))))
                       (,(symb "COUNT!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'count!)))
                          (error "Cannot use COUNT! together with ~A" ,loop-type)
