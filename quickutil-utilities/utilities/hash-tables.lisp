@@ -28,11 +28,7 @@
    `value` bound to the keys and values of the hash table
    respectively. Return `result` from the iteration form."
   #>%%%>
-  (defmacro dohash ((key value table &optional result) &body body)
+  (defmacro dohash ((key value table &optional (result nil result?)) &body body)
     %%DOC
-    `(progn
-       (maphash (lambda (,key ,value)
-                  ,@body)
-                ,table)
-       ,result))
+    `(loop :for ,key :being :the :hash-keys :of ,table :using (hash-value ,value) :do ,@body ,@(when result? `(:finally (return ,result)))))
   %%%)
