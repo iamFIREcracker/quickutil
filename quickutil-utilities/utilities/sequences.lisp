@@ -18,6 +18,23 @@
       (stable-sort copy predicate :key key)))
   %%%)
 
+(defutil subseq- (:version (1 . 0)
+                  :category sequences)
+  "Like SUBSEQ, except it supports negative indices."
+  #>%%%>
+  (defun subseq- (seq &optional (start nil) (end nil))
+    %%DOC
+    (if (not start)
+      (setf start 0)
+      (if (< start 0)
+        (setf start (+ (length seq) start))))
+    (if (not end)
+      (setf end (length seq))
+      (if (< end 0)
+        (setf end (+ (length seq) end))))
+    (subseq seq start end))
+  %%%)
+
 (defutil take (:version (1 . 0)
                :category sequences)
   "Take the first `n` elements from `sequence`."
