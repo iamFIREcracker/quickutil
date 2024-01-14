@@ -118,7 +118,7 @@ Examples:
                                            (extract-loop-type (cdr body)))))))
                (init-result (loop-type)
                  (ecase loop-type
-                   ((collect! append! minimize! maximize) nil)
+                   ((collect! append! minimize! maximize!) nil)
                    ((sum! count!) 0)
                    ((multiply!) 1))))
         (let* ((loop-type-value (extract-loop-type body))
