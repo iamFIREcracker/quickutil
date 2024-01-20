@@ -91,46 +91,6 @@ be used with SETF.")
 be used with SETF."))
   %%%)
 
-(defutil doplist (:version (1 . 0)
-                  :compilation-depends-on (with-gensyms parse-body)
-                  :depends-on with-gensyms
-                  :category (alexandria lists plists))
-  "Iterates over elements of `plist`. `body` can be preceded by
-declarations, and is like a `tagbody`. `return` may be used to terminate
-the iteration early. If `return` is not used, returns `values`."
-  #>%%%>
-  (defun malformed-plist (plist)
-    (error "Malformed plist: ~S" plist))
-
-  (defmacro doplist ((key val plist &optional values) &body body)
-    %%DOC
-    (multiple-value-bind (forms declarations) (parse-body body)
-      (with-gensyms (tail loop results)
-        `(block nil
-           (flet ((,results ()
-                    (let (,key ,val)
-                      (declare (ignorable ,key ,val))
-                      (return ,values))))
-             (let* ((,tail ,plist)
-                    (,key (if ,tail
-                              (pop ,tail)
-                              (,results)))
-                    (,val (if ,tail
-                              (pop ,tail)
-                              (malformed-plist ',plist))))
-               (declare (ignorable ,key ,val))
-               ,@declarations
-               (tagbody
-                  ,loop
-                  ,@forms
-                  (setf ,key (if ,tail
-                                 (pop ,tail)
-                                 (,results))
-                        ,val (if ,tail
-                                 (pop ,tail)
-                                 (malformed-plist ',plist)))
-                  (go ,loop))))))))
-  %%%)
 
 (defutil appendf (:version (1 . 0)
                   :category (alexandria lists))

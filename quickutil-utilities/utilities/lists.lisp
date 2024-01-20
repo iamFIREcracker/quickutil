@@ -430,6 +430,71 @@ Example
   #>%%%>
   (defmacro dosublists ((var list &optional (result nil result?)) &body body)
     %%DOC
-    `(loop :for ,var :on ,list do ,@body ,@(when result? `(:finally (return ,result)))))
+    `(loop :for ,var :on ,list :do ,@body ,@(when result? `(:finally (return ,result)))))
+  %%%)
+
+
+(defutil plist-keys (:version (1 . 0)
+                     :category (lists plists))
+  "Return all the keys of `plist`."
+  #>%%%>
+  (defun plist-keys (plist)
+    %%DOC
+    (loop for k in plist by #'cddr collect k))
+  %%%)
+
+(defutil plist-values (:version (1 . 0)
+                       :category (lists plists))
+  "Return all the values of `plist`."
+  #>%%%>
+  (defun plist-values (plist)
+    %%DOC
+    (loop for v in (cdr plist) by #'cddr collect v))
+  %%%)
+
+
+(defutil doplist (:version (1 . 0)
+                  :depends-on (once-only)
+                  :category (lists plists))
+  "Iterates over the elements of `plist`."
+  #>%%%>
+  (defmacro doplist ((key val plist &optional (result nil result?)) &body body)
+    %%DOC
+    (once-only (plist)
+      `(loop
+         :for ,key :in ,plist :by #'cddr
+         :for ,val :in (cdr ,plist) :by #'cddr
+         :do ,@body ,@(when result? `(:finally (return ,result))))))
+  %%%)
+
+
+(defutil alist-keys (:version (1 . 0)
+                     :category (lists alists))
+  "Return all the keys of `alist`."
+  #>%%%>
+  (defun alist-keys (alist)
+    %%DOC
+    (mapcar #'car alist))
+  %%%)
+
+(defutil alist-values (:version (1 . 0)
+                       :category (lists alists))
+  "Return all the values of `alist`."
+  #>%%%>
+  (defun alist-values (alist)
+    %%DOC
+    (mapcar #'cdr alist))
+  %%%)
+
+
+(defutil doalist (:version (1 . 0)
+                  :depends-on (once-only)
+                  :category (lists alists))
+  "Iterates over the elements of `alist`."
+  #>%%%>
+  (defmacro doalist ((key val alist &optional (result nil result?)) &body body)
+    %%DOC
+    (once-only (alist)
+      `(loop :for (,key . ,val) :in ,alist :do ,@body ,@(when result? `(:finally (return ,result))))))
   %%%)
 
