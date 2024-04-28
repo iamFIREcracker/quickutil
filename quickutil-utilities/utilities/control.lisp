@@ -65,14 +65,14 @@ lexical environmnet."
   %%%)
 
 (defutil looping (:version (1 . 0)
-                  :depends-on (with-gensyms symb)
+                  :depends-on (with-gensyms)
                   :category (language misc))
-  "Run `body` in an environment where the symbols COLLECT!, APPEND!, SUM!,
-MULTIPLY!, COUNT!, MINIMIZE!, and MAXIMIZE! are bound to functions that can be
-used to collect / append, sum, multiply, count, minimize or maximize things
-respectively.
+  "Run `body` in an environment where the symbols COLLECT!, APPEND!, ADJOIN!,
+SUM!, MULTIPLY!, COUNT!, MINIMIZE!, and MAXIMIZE! are bound to functions that
+can be used to collect / append, sum, multiply, count, minimize or maximize
+things respectively.
 
-Mixed usage of COLLECT!/APPEND!, SUM!, MULTIPLY!, COUNT!, MINIMIZE! and
+Mixed usage of COLLECT!/APPEND!/ADJOIN!, SUM!, MULTIPLY!, COUNT!, MINIMIZE! and
 MAXIMIZE! is not supported.
 
 Examples:
@@ -110,7 +110,7 @@ Examples:
       (labels ((extract-loop-type (body)
                  (cond ((null body) nil)
                        ((symbolp body) (find body
-                                             '(collect! append! sum! multiply! count! minimize! maximize!)
+                                             '(collect! append! adjoin! sum! multiply! count! minimize! maximize!)
                                              :test #'string=))
                        ((consp body) (unless (and (symbolp (car body))
                                                   (string= (car body) 'looping))
@@ -118,7 +118,7 @@ Examples:
                                            (extract-loop-type (cdr body)))))))
                (init-result (loop-type)
                  (ecase loop-type
-                   ((collect! append! minimize! maximize!) nil)
+                   ((collect! append! adjoin! minimize! maximize!) nil)
                    ((sum! count!) 0)
                    ((multiply!) 1))))
         (let* ((loop-type-value (extract-loop-type body))
@@ -126,6 +126,10 @@ Examples:
           `(let* ((,loop-type ',loop-type-value)
                   (,result ,result-value)
                   (,last nil))
+             ;; TODO: rather than defining all these functions only to get
+             ;; a few of them (one?!) used, why not just define the function
+             ;; that the body is going to use?  will that speed up the
+             ;; compilation process a little bit?
              (declare (ignorable ,last))
              (labels ((,collect-last (item)
                        (if (not ,last)
@@ -133,41 +137,49 @@ Examples:
                            (setf ,last ,result))
                          (prog1 (push item (cdr ,last))
                            (setf ,last (cdr ,last)))))
-                      (,(symb "COLLECT!") (item)
+                      (,(intern "COLLECT!") (item)
                        (if (and ,loop-type (and (not (eql ,loop-type 'collect!))
-                                                (not (eql ,loop-type 'append!)) ))
+                                                (not (eql ,loop-type 'append!))
+                                                (not (eql ,loop-type 'adjoin!)) ))
                          (error "Cannot use COLLECT! together with ~A" ,loop-type)
                          (,collect-last item)))
-                      (,(symb "APPEND!") (item)
+                      (,(intern "APPEND!") (item)
                        (if (and ,loop-type (and (not (eql ,loop-type 'collect!))
-                                                (not (eql ,loop-type 'append!)) ))
+                                                (not (eql ,loop-type 'append!))
+                                                (not (eql ,loop-type 'adjoin!)) ))
                          (error "Cannot use APPEND! together with ~A" ,loop-type)
                          (progn
                            (setf ,result (append ,result item)
                                  ,last (last item))
                            item)))
-                      (,(symb "SUM!") (item)
+                      (,(intern "ADJOIN!") (item &rest adjoin-args)
+                       (if (and ,loop-type (and (not (eql ,loop-type 'collect!))
+                                                (not (eql ,loop-type 'append!))
+                                                (not (eql ,loop-type 'adjoin!))))
+                         (error "Cannot use ADJOIN! together with ~A" ,loop-type)
+                         (setf ,result (apply #'adjoin item ,result adjoin-args))))
+                      (,(intern "SUM!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'sum!)))
                          (error "Cannot use SUM! together with ~A" ,loop-type)
                          (progn
                            (incf ,result item)
                            item)))
-                      (,(symb "MULTIPLY!") (item)
+                      (,(intern "MULTIPLY!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'multiply!)))
                          (error "Cannot use MULTIPLY! together with ~A" ,loop-type)
                          (setf ,result (* ,result item))))
-                      (,(symb "COUNT!") (item)
+                      (,(intern "COUNT!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'count!)))
                          (error "Cannot use COUNT! together with ~A" ,loop-type)
                          (progn
                            (when item
                              (incf ,result)
                              item))))
-                      (,(symb "MINIMIZE!") (item)
+                      (,(intern "MINIMIZE!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'minimize!)))
                          (error "Cannot use MINIMIZE1 together with ~A" ,loop-type)
                          (setf ,result (min (or ,result item) item))))
-                      (,(symb "MAXIMIZE!") (item)
+                      (,(intern "MAXIMIZE!") (item)
                        (if (and ,loop-type (not (eql ,loop-type 'maximize!)))
                          (error "Cannot use MAXIMIZE! together with ~A" ,loop-type)
                          (setf ,result (max (or ,result item) item)))))
