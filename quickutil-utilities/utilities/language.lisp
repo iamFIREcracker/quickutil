@@ -148,17 +148,19 @@ BND* will expand to a DESTRUCTURING-BIND call:
 (defutil bnd1 (:version (1 . 0)
                :depends-on (bnd*)
                :category (language binding))
-  "Equivalent to BND* with one binding."
+  "BND1 is to BND* like LET1 is to LET*."
   #>%%%>
-  (defmacro bnd1 (binding &body body)
+  (defmacro bnd1 (var val &body body)
     %%DOC
-    `(bnd* (,binding)
+    `(bnd* ((,var ,val))
        ,@body))
   %%%)
-#+#:excluded (bnd1 y y)
-#+#:excluded (bnd1 (y (list 1 2 3)) y)
-#+#:excluded (bnd1 ((a b c) (list 1 2 3)) (list a b c))
-#+#:excluded (bnd1 ((values a b c) (values 1 2 3)) (list a b c))
+#+#:excluded (bnd1 y nil y)
+#+#:excluded (bnd1 y (list 1 2 3) y)
+#+#:excluded (bnd1 (a b c) (list 1 2 3)
+               (list a c))
+#+#:excluded (bnd1 (values q r) (floor 42 11)
+               (list q r))
 
 (defutil defaccessor (:version (1 . 0)
                       :depends-on (parse-body with-gensyms)
