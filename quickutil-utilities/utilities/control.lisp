@@ -203,3 +203,59 @@ In `body` the symbol `recur` will be bound to the function for recurring."
                  ,@body))
          (,(intern "RECUR") ,@values))))
   %%%)
+
+(defutil ~> (:version (1 . 0)
+             :compilation-depends-on (recursively)
+             :category (language misc))
+  "Threads the expr through the forms, like Clojure's `->`.
+
+  While threading, for each element of `forms`:
+
+  - if a SYMBOL, it's converted into a LIST and the accumulated value is
+    appended to it
+  - if a LIST already, the accumulated value is appended to it unless the list
+    contains the placeholder '~ (in which case '~ is replaced with the
+    accumulated value)
+
+  Examples:
+  (-> 'World
+    (list 'Hello))
+  =>
+  (HELLO WORLD)
+
+  (-> 'World
+    (list ~ 'Hello))
+  =>
+  (WORLD HELLO)
+
+  (-> 'World
+    (list ~ 'Hello)
+    reverse)
+  =>
+  (HELLO WORLD)
+  "
+  #>%%%>
+  (defmacro ~> (x &rest forms)
+    %%DOC
+    (labels ((replace-or-append (old form new)
+               (if (contains? old form)
+                 (subst new old form)
+                 (append form (list new))))
+             (contains? (target form)
+               (recursively ((form form))
+                 (if (atom form)
+                   (eq form target)
+                   (or (recur (car form))
+                       (recur (cdr form)))))))
+      (let ((placeholder (intern "~")))
+        (with-gensyms (result)
+          `(let* ((,result ,x)
+                  ,@(mapcar (lambda (form)
+                              (if (atom form)
+                                `(,result (,form ,result))
+                                `(,result ,(replace-or-append placeholder
+                                                              form
+                                                              result))))
+                            forms))
+             ,result)))))
+  %%%)
