@@ -21,6 +21,16 @@ Note: cannot use ABBR for this, because LABELS is a special operator."
     `(if (not ,test) ,then ,else))
   %%%)
 
+(defutil when-not (:version (1 . 0)
+                   :category control)
+  "Like WHEN, except TEST gets wrapped inside NOT."
+  #>%%%>
+  (defmacro when-not (test &body body)
+    %%DOC
+    `(when (not ,test) ,@body))
+  %%%)
+
+
 (defutil abbr (:version (1 . 0)
                :category (language abbr))
   "Defines a new function/macro named `short` and sharing
@@ -52,6 +62,8 @@ FDEFINITION/MACRO-FUNCTION with `long`."
 
 (defabbrutil d-b destructuring-bind)
 (defabbrutil m-v-b multiple-value-bind)
+(defabbrutil w/slots with-slots)
+(defabbrutil w/gensyms with-gensyms (with-gensyms))
 
 (defabbrutil split split-sequence (split-sequence))
 (defabbrutil split-if split-sequence-if (split-sequence))
@@ -59,3 +71,5 @@ FDEFINITION/MACRO-FUNCTION with `long`."
 
 (defabbrutil keep-if remove-if-not)
 (defabbrutil keep-if-not remove-if)
+
+(defabbrutil while-not until (until))
