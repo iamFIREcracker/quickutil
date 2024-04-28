@@ -175,3 +175,18 @@ lambda-list
          (list (loop :for ,var :in ,seq :do ,@body ,@(when result? `(:finally (return ,result)))))
          (sequence (loop :for ,var :across ,seq :do ,@body ,@(when result? `(:finally (return ,result))))))))
   %%%)
+
+(defutil doseqs (:version (1 . 0)
+                 :depends-on once-only
+                 :category sequences)
+  "Like DOSEQ, except this can iterate over multiple sequences at the same
+time."
+  #>%%%>
+  (defmacro doseqs (((var1 seq1) (var2 seq2) &rest var-seq-specs) &body body)
+    %%DOC
+    (let* ((vars (list* var1 var2 (mapcar #'car var-seq-specs)))
+           (seqs (list* seq1 seq2 (mapcar #'cadr var-seq-specs))))
+
+      `(block nil
+         (map nil (lambda (,@vars) ,@body) ,@seqs))))
+  %%%)
