@@ -467,6 +467,15 @@ Example
          :do ,@body ,@(when result? `(:finally (return ,result))))))
   %%%)
 
+(defutil alist (:version (1 . 0)
+                :category (lists alists))
+  "Create an association list from a flat list of values."
+  #>%%%>
+  (defun alist (key value &rest key-values)
+    (list* (cons key value)
+           (loop :for (key value) :on key-valyes :by #'cddr
+                 :collect (cons key value))))
+  %%%)
 
 (defutil alist-keys (:version (1 . 0)
                      :category (lists alists))
