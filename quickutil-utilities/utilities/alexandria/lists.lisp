@@ -48,11 +48,11 @@ property list PLIST in the same order."
       ((define-alist-get (name get-entry get-value-from-entry add doc)
          `(progn
             (declaim (inline ,name))
-            (defun ,name (alist key &key (test 'eql))
+            (defun ,name (alist key &key (test 'equal))
               ,doc
               (let ((entry (,get-entry key alist :test test)))
                 (values (,get-value-from-entry entry) entry)))
-            (define-setf-expander ,name (place key &key (test ''eql)
+            (define-setf-expander ,name (place key &key (test ''equal)
                                                    &environment env)
               (multiple-value-bind
                     (temporary-variables initforms newvals setter getter)
