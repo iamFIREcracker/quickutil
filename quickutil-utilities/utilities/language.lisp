@@ -207,3 +207,152 @@ BND* will expand to a DESTRUCTURING-BIND call:
             ',name
             '(setf ,name))))))
   %%%)
+
+(defutil undefun (:version (1 . 0)
+                  :depends-on ()
+                  :provides ()
+                  :category language)
+  "Removes the function or macro definition, if any, of `name` in the global
+environment.
+
+Similar to FMAKUNBOUND, except it has the same signature of DEFUN; this makes
+it particularly easy to undefine a function or a macro by simply changing DEFUN
+into UNDEFUN and DEFMACRO into UNDEFMACRO"
+  #>%%%>
+  (defmacro undefun (name lambda-list &body body)
+    %%DOC
+    (declare (ignore lamda-list body))
+    `(fmakunbound ,name))
+  %%%)
+
+(defutil undefmacro (:version (1 . 0)
+                     :depends-on ()
+                     :provides ()
+                     :category language)
+  "Removes the function or macro definition, if any, of `name` in the global
+environment.
+
+Similar to FMAKUNBOUND, except it has the same signature of DEFUN; this makes
+it particularly easy to undefine a function or a macro by simply changing DEFUN
+into UNDEFUN and DEFMACRO into UNDEFMACRO"
+  #>%%%>
+  (defmacro undefmacro (name lambda-list &body body)
+    %%DOC
+    (declare (ignore lamda-list body))
+    `(fmakunbound ,name))
+  %%%)
+
+(defutil undefvar (:version (1 . 0)
+                   :depends-on ()
+                   :provides ()
+                   :category language)
+  "Makes the symbol be unbound, regardless of whether it was previously bound.
+
+Similar to MAKUNBOUND, except it has the same signature of DEFVAR; this makes
+it particularly easy to make a symbol unbound by simply changing DEFVAR into
+UNDEFVAR"
+  #>%%%>
+  (defmacro undefvar (var &optional (val nil) (doc nil))
+    %%DOC
+    (declare (ignore val doc))
+    `(makunbound ,var))
+  %%%)
+
+(defutil undefparameter (:version (1 . 0)
+                         :depends-on ()
+                         :provides ()
+                         :category language)
+  "Makes the symbol be unbound, regardless of whether it was previously bound.
+
+Similar to MAKUNBOUND, except it has the same signature of DEFPARAMETER; this
+makes it particularly easy to make a symbol unbound by simply changing
+DEFPARAMETER into UNDEFVAR"
+  #>%%%>
+  (defmacro undefparameter (var val &optional (doc nil))
+    %%DOC
+    (declare (ignore val doc))
+    `(makunbound ,var))
+  %%%)
+
+(defutil undefconstant (:version (1 . 0)
+                        :depends-on ()
+                        :provides ()
+                        :category language)
+  "Makes the symbol be unbound, regardless of whether it was previously bound.
+
+Similar to MAKUNBOUND, except it has the same signature of DEFCONSTANT; this
+makes it particularly easy to make a symbol unbound by simply changing
+DEFCONSTANT into UNDEFVAR"
+  #>%%%>
+  (defmacro undefconstant (name value &optional (doc nil))
+    %%DOC
+    (declare (ignore val doc))
+    `(makunbound ,var))
+  %%%)
+
+(defutil undefpackage (:version (1 . 0)
+                       :depends-on ()
+                       :provides ()
+                       :category language)
+  "Deletes `package` from all system data structures.
+
+Similar to DELETE-PACKAGE, except it has the same signature of DEFPACKAGE; this
+makes it particularly easy to delete a package by simply changing DEFPACKAGE
+into UNDEFPACKAGE"
+  #>%%%>
+  (defmacro undefpackage (name &rest options)
+    %%DOC
+    (declare (ignore options))
+    `(delete-package ,name))
+  %%%)
+
+(defutil undefclass (:version (1 . 0)
+                     :depends-on ()
+                     :provides ()
+                     :category language)
+  "Removes the association between `class` and its class object.
+
+A mere wrapper around (setf (find-class class) nil), except it has the same
+signature of DEFCLASS; this makes it particularly easy to undefine a class by
+simply changing DEFCLASS into UNDEFCLASS"
+  #>%%%>
+  (defmacro undefclass (class direct-superclasses direct-slots &rest options)
+    %%DOC
+    (declare (ignore direct-superclasses direct-slots options))
+    `(setf (find-class ,class) nil))
+  %%%)
+
+(defutil undefmethod (:version (1 . 0)
+                      :depends-on ()
+                      :provides ()
+                      :category language)
+  "Removes a method from a generic-function `name`.
+
+This macro's signature matches DEFMETHOD's one, and `args` will be used to
+extract the method qualifiers and specializers necessary to find the right
+method to remove; this makes it particularly easy to undefine a method by
+simply changing DEFMETHOD into UNDEFMETHOD"
+  #>%%%>
+  ;; https://groups.google.com/g/comp.lang.lisp/c/W6OrfjLhPJ8/m/txPfD-pPqPMJ
+  (defmacro undefmethod (name &rest args)
+    %%DOC
+    (flet ((parse-undefmethod-args (args)
+             (let (p q method-qualifiers specializers)
+               (loop (cond ((atom (setq p (car args))) (push p method-qualifiers))
+                           (t (return))) ; now P is the specialized-lambda-list
+                     (setq args (cdr args)))
+               (loop (when (null p) (return))
+                     (cond ((symbolp (setq q (car p)))
+                            (case q
+                              ((&aux &key &optional &rest &allow-other-keys) (return))
+                              (t (push T specializers)))) ; handle eql specializers:
+                           ((consp (cadr q)) (push (cadr q) specializers))
+                           (t (push (find-class (cadr q)) specializers)))
+                     (setq p (cdr p)))
+               (values (nreverse method-qualifiers) (nreverse specializers)))))
+      `(let ((fdefn (fdefinition ',name)))
+         (multiple-value-bind (qualifiers specializers)
+             (parse-undefmethod-args ',args)
+           (let ((meth (find-method fdefn qualifiers specializers)))
+             (when meth (remove-method fdefn meth)))))))
+  %%%)
