@@ -267,3 +267,41 @@ In `body` the symbol `recur` will be bound to the function for recurring."
                             forms))
              ,result)))))
   %%%)
+
+
+(defutil continuable (:version (1 . 0)
+                      :depends-on (let1)
+                      :category (language))
+  "Wraps `body` in a RESTART-CASE with a CONTINUE restart. When invoked, the
+restart will simply return NIL, allowing the program to continue execution.
+
+Returns the value of the last form in body, or NIL if the CONTINUE restart is
+invoked.
+
+By default, the message reported by the restart case will be \"Continue.\".
+This can be overridden by providing a :report form as the first element of the
+body.
+
+Examples:
+
+  ;; Basic usage
+  (continuable
+    (format t \"This might fail~%\")
+    (/ 1 0))
+
+  ;; With custom report message
+  (continuable
+    (:report \"Ignore division by zero and continue\")
+    (format t \"This might fail~%\")
+    (/ 1 0))
+"
+  #>%%%>
+  (defmacro continuable (&body body)
+    %%DOC
+    (let1 report "Continue."
+      (if (eq (caar body) :report)
+        (setf report (cadar body) body (nthcdr 2 body)))
+      `(restart-case
+         (progn ,@body)
+         (continue () :report report))))
+  %%%)
