@@ -305,3 +305,42 @@ Examples:
          (progn ,@body)
          (continue () :report report))))
   %%%)
+
+(defutil retriable (:version (1 . 0)
+                    :depends-on (let1 aif)
+                    :category (language))
+  "Wraps `body` in a RESTART-CASE with a RETRY restart. When invoked, the
+restart will re-execute the body forms until they return a non-NIL value.
+
+Returns the first non-NIL value returned by the body forms.
+
+By default, the message reported by the restart case will be \"Retry.\".  This
+can be overridden by providing a :report form as the first element of the
+body.
+
+Examples:
+
+  ;; Basic usage
+  (retriable
+    (let ((x (random 10)))
+      (when (> x 5)
+        x)))
+
+  ;; With custom report message
+  (retriable
+    (:report \"Try again to get a number greater than 5\")
+    (let ((x (random 10)))
+      (when (> x 5)
+        x)))
+"
+  #>%%%>
+  (defmacro retriable (&body body)
+    %%DOC
+    (let1 report "Retry."
+      (if (eq (caar body) :report)
+        (setf report (cadar body) body (nthcdr 2 body)))
+      (flet ((call-with-retry-restart (msg think)
+               (loop (with-simple-restart (retry msg)
+                       (return (funcall thunk))))))
+        `(call-with-retry-restart ,msg (lambda () ,@body)))))
+  %%%)
