@@ -2,7 +2,7 @@
 
 (defutil pr (:version (1 . 0)
              :category printing)
-  "Prints all its `args` to screen. Returns the first arg."
+  "Print `args` to screen. Returns the first arg."
   #>%%%>
   (defun pr (&rest args)
     %%DOC
@@ -13,7 +13,7 @@
 
 (defutil prn (:version (1 . 0)
               :category printing)
-  "Prints all its `args` to screen, separated by a newline. Returns the first arg."
+  "Print `args` to screen, separated by a newline. Returns the first arg."
   #>%%%>
   (defun prn (&rest args)
     %%DOC
@@ -24,7 +24,7 @@
 
 (defutil prs (:version (1 . 0)
               :category printing)
-  "Print all its `args` to screen, separated by a space. Returns the first arg."
+  "Print `args` to screen, separated by a space. Returns the first arg."
   #>%%%>
   (defun prs (&rest args)
     %%DOC
@@ -33,9 +33,10 @@
     (first args))
   %%%)
 
+
 (defutil spr (:version (1 . 0)
               :category printing)
-  "Prints all its `args` into a string, and return it."
+  "Print `args` into a string, and return it."
   #>%%%>
   (defun spr (&rest args)
     %%DOC
@@ -44,7 +45,7 @@
 
 (defutil sprn (:version (1 . 0)
                :category printing)
-  "Prints all its `args` into a string, separated by a newline, and return it."
+  "Print `args` into a string, separated by a newline, and return it."
   #>%%%>
   (defun sprn (&rest args)
     %%DOC
@@ -53,7 +54,7 @@
 
 (defutil sprs (:version (1 . 0)
                :category printing)
-  "Print all its `args` into a string, separated by a space, and return it."
+  "Print `args` into a string, separated by a space, and return it."
   #>%%%>
   (defun sprs (&rest args)
     %%DOC
