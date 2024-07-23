@@ -212,38 +212,38 @@ In `body` the symbol `recur` will be bound to the function for recurring."
          (,(intern "RECUR") ,@values))))
   %%%)
 
-(defutil ~> (:version (1 . 0)
-             :compilation-depends-on (recursively)
-             :category (language misc))
-  "Threads the expr through the forms, like Clojure's `->`.
+(defutil ~>> (:version (1 . 0)
+              :compilation-depends-on (recursively)
+              :category (language misc))
+  "Threads the expr through the forms, like Clojure's `->>`.
 
-  While threading, for each element of `forms`:
+While threading, for each element of `forms`:
 
-  - if a SYMBOL, it's converted into a LIST and the accumulated value is
-    appended to it
-  - if a LIST already, the accumulated value is appended to it unless the list
-    contains the placeholder '~ (in which case '~ is replaced with the
-    accumulated value)
+- if a SYMBOL, it's converted into a function call with the accumulated value
+as it's first argument
+- if a function call already, the accumulated value is **appended** to the
+list of args unless it contains the placeholder '~ (in which case '~ is
+replaced with the accumulated value)
 
-  Examples:
-  (-> 'World
-    (list 'Hello))
-  =>
-  (HELLO WORLD)
+Examples:
+(~>> 'World
+  (list 'Hello))
+=>
+(HELLO WORLD)
 
-  (-> 'World
-    (list ~ 'Hello))
-  =>
-  (WORLD HELLO)
+(~>> 'World
+  (list ~ 'Hello))
+=>
+(HELLO WORLD)
 
-  (-> 'World
-    (list ~ 'Hello)
-    reverse)
-  =>
-  (HELLO WORLD)
+(~>> 'World
+  (list ~ 'Hello)
+  reverse)
+=>
+(HELLO WORLD)
   "
   #>%%%>
-  (defmacro ~> (x &rest forms)
+  (defmacro ~>> (x &rest forms)
     %%DOC
     (labels ((replace-or-append (old form new)
                (if (contains? old form)
