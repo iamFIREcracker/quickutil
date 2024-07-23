@@ -50,26 +50,30 @@ FDEFINITION/MACRO-FUNCTION with `long`."
            (error "Can't abbreviate ~a" ',long)))))
   %%%)
 
-(defmacro defabbrutil (short long &optional deps)
+(defmacro defabbrutil (short long &rest util-spec)
   (let ((doc (format nil "Like ~A, but few chars shorter." (string-upcase long)))
-        (depends-on (cons 'abbr deps))
+        (version (getf util-spec :version '(1 . 0)))
+        (depends-on (cons 'abbr (getf util-spec :depends-on)))
+        (compilation-depends-on (getf util-spec :compilation-depends-on))
+        (category (getf util-spec :category '(language abbr)))
         (body (format nil "  ~((abbr ~a ~a)~)" short long)))
-    `(defutil ,short (:version (1 . 0)
+    `(defutil ,short (:version ,version
                       :depends-on ,depends-on
-                      :category (language abbr))
+                      :compilation-depends-on ,compilation-depends-on
+                      :category ,category)
        ,doc
        ,body)))
 
 (defabbrutil d-b destructuring-bind)
 (defabbrutil m-v-b multiple-value-bind)
 (defabbrutil w/slots with-slots)
-(defabbrutil w/gensyms with-gensyms (with-gensyms))
+(defabbrutil w/gensyms with-gensyms :depends-on (with-gensyms))
 
-(defabbrutil split split-sequence (split-sequence))
-(defabbrutil split-if split-sequence-if (split-sequence))
-(defabbrutil split-if-not split-sequence-if-not (split-sequence))
+(defabbrutil split split-sequence :compilation-depends-on (split-sequence))
+(defabbrutil split-if split-sequence-if :compilation-depends-on (split-sequence))
+(defabbrutil split-if-not split-sequence-if-not :compilation-depends-on (split-sequence))
 
 (defabbrutil keep-if remove-if-not)
 (defabbrutil keep-if-not remove-if)
 
-(defabbrutil while-not until (until))
+(defabbrutil while-not until :depends-on (until))
