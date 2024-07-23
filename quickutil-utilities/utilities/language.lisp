@@ -222,7 +222,7 @@ into UNDEFUN and DEFMACRO into UNDEFMACRO"
   (defmacro undefun (name lambda-list &body body)
     %%DOC
     (declare (ignore lamda-list body))
-    `(fmakunbound ,name))
+    `(fmakunbound ',name))
   %%%)
 
 (defutil undefmacro (:version (1 . 0)
@@ -239,7 +239,7 @@ into UNDEFUN and DEFMACRO into UNDEFMACRO"
   (defmacro undefmacro (name lambda-list &body body)
     %%DOC
     (declare (ignore lamda-list body))
-    `(fmakunbound ,name))
+    `(fmakunbound ',name))
   %%%)
 
 (defutil undefvar (:version (1 . 0)
@@ -255,7 +255,7 @@ UNDEFVAR"
   (defmacro undefvar (var &optional (val nil) (doc nil))
     %%DOC
     (declare (ignore val doc))
-    `(makunbound ,var))
+    `(makunbound ',var))
   %%%)
 
 (defutil undefparameter (:version (1 . 0)
@@ -271,7 +271,7 @@ DEFPARAMETER into UNDEFVAR"
   (defmacro undefparameter (var val &optional (doc nil))
     %%DOC
     (declare (ignore val doc))
-    `(makunbound ,var))
+    `(makunbound ',var))
   %%%)
 
 (defutil undefconstant (:version (1 . 0)
@@ -287,7 +287,7 @@ DEFCONSTANT into UNDEFVAR"
   (defmacro undefconstant (name value &optional (doc nil))
     %%DOC
     (declare (ignore val doc))
-    `(makunbound ,var))
+    `(makunbound ',var))
   %%%)
 
 (defutil undefpackage (:version (1 . 0)
@@ -303,7 +303,7 @@ into UNDEFPACKAGE"
   (defmacro undefpackage (name &rest options)
     %%DOC
     (declare (ignore options))
-    `(delete-package ,name))
+    `(delete-package ',name))
   %%%)
 
 (defutil undefclass (:version (1 . 0)
@@ -319,7 +319,7 @@ simply changing DEFCLASS into UNDEFCLASS"
   (defmacro undefclass (class direct-superclasses direct-slots &rest options)
     %%DOC
     (declare (ignore direct-superclasses direct-slots options))
-    `(setf (find-class ,class) nil))
+    `(setf (find-class ',class) nil))
   %%%)
 
 (defutil undefmethod (:version (1 . 0)
