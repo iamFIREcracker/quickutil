@@ -361,7 +361,7 @@ Examples:
         (setf report (cadar body) body (nthcdr 2 body)))
       `(restart-case
          (progn ,@body)
-         (continue () :report report))))
+         (continue () :report ,report))))
   %%%)
 
 (defutil retriable (:version (1 . 0)
