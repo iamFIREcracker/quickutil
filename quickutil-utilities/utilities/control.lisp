@@ -397,8 +397,6 @@ Examples:
     (let1 report "Retry."
       (if (eq (caar body) :report)
         (setf report (cadar body) body (nthcdr 2 body)))
-      (flet ((call-with-retry-restart (msg think)
-               (loop (with-simple-restart (retry msg)
-                       (return (funcall thunk))))))
-        `(call-with-retry-restart ,msg (lambda () ,@body)))))
+      `(loop (with-simple-restart (retry ,report)
+               (return (progn ,@body))))))
   %%%)

@@ -51,3 +51,23 @@
                  `(aif ,car
                     (aand ,@(cdr forms))))))))
   %%%)
+
+(defutil aprog1 (:version (1 . 0)
+                 :depends-on let1
+                 :category (binding anaphoric))
+  "Like PROG1, except binds the result of the `result-form` (i.e., the returned
+form) to IT (via LET) for the scope of `body`.
+
+Inspired by ActiveSupport: Object#returning
+https://weblog.jamisbuck.org/2006/10/27/mining-activesupport-object-returning.html"
+  #>%%%>
+  (defmacro aprog1 (result-form &body body)
+    %%DOC
+    (aprog1-expand result-form body))
+
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (defun aprog1-expand (result-form body)
+      (let1 it (intern "IT")
+        `(let1 ,it ,result-form
+           ,@body))))
+  %%%)
