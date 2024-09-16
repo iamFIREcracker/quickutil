@@ -473,7 +473,7 @@ Example
   #>%%%>
   (defun alist (key value &rest key-values)
     (list* (cons key value)
-           (loop :for (key value) :on key-valyes :by #'cddr
+           (loop :for (key value) :on key-values :by #'cddr
                  :collect (cons key value))))
   %%%)
 
