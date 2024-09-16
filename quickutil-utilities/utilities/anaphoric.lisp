@@ -69,5 +69,6 @@ https://weblog.jamisbuck.org/2006/10/27/mining-activesupport-object-returning.ht
     (defun aprog1-expand (result-form body)
       (let1 it (intern "IT")
         `(let1 ,it ,result-form
-           ,@body))))
+           ,@body
+           ,it))))
   %%%)
