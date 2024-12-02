@@ -104,7 +104,11 @@ Examples:
   ;; Signals an ERROR: Cannot use COUNT! together with SUM!
   "
   #>%%%>
-  (defparameter *looping-reduce-keywords*  '(collect! append! adjoin! sum! multiply! count! minimize! maximize!))
+  (defparameter *looping-reduce-keywords*  '(collect! append! adjoin!
+                                             sum! multiply!
+                                             count!
+                                             minimize!
+                                             maximize!))
 
   (defun %extract-reduce-keywords (body)
     "Walk `body` and collect any symbol that matches any of the keywords inside
@@ -135,7 +139,7 @@ E.g. COLLECT! is compatible with APPEND!, or ADJOIN!, but not with SUM!"
                          (error "Cannot use ~A together with ~A" it k)))
                (minimize! (aif (find 'minimize! rest :test-not 'eq)
                             (error "Cannot use ~A together with ~A" it k)))
-               (maximize! (aif (find 'minimize! rest :test-not 'eq)
+               (maximize! (aif (find 'maximize! rest :test-not 'eq)
                             (error "Cannot use ~A together with ~A" it k))))))
       (loop for (k . rest) on keywords do (incompatible-keyword! k rest))))
 
