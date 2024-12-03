@@ -17,15 +17,47 @@ returns the result as the second value."
          (values ,tm ,res))))
   %%%)
 
+(defutil psx (:version (1 . 0)
+              :category instrumentation)
+  "PRETTY-PRINT `form`.
+
+The macro utlimately expands into `form`; this makes it particularly convenient
+to wrap a reader macro expression with this macro, and see what it expands to
+without altering the original behavior.
+
+Examples:
+
+> (psx [oddp _])
+; (LAMBDA (&OPTIONAL _) (DECLARE (IGNORABLE _)) (ODDP _))
+#<FUNCTION (LAMBDA (&OPTIONAL _)) {B800F9678B}>
+
+> (mapcar (psx [oddp _]) (list 1 2 3))
+; (LAMBDA (&OPTIONAL _) (DECLARE (IGNORABLE _)) (ODDP _))
+(T NIL T)
+"
+  #>%%%>
+  (defmacro psx (form)
+    %%DOC
+    `(progn
+       (pprint ',form)
+       ,form))
+  %%%)
+
 (defutil pmx (:version (1 . 0)
               :category instrumentation)
-  "MACROEXPAND-1 and then PRETTY-PRINT `form`."
+  "MACROEXPAND-1 `form` and then PRETTY-PRINT it.
+
+The macro utlimately expands into `form`; this makes it particularly convenient
+to wrap an expression with this macro, and see what the expression expands to
+without altering the original behavior.
+"
   #>%%%>
   (defmacro pmx (form)
     %%DOC
-    `(pprint (macroexpand-1 ',form)))
+    `(progn
+       (pprint (macroexpand-1 ',form))
+       ,form))
   %%%)
-
 
 (defutil dbg (:version (1 . 0)
               :category printing)
