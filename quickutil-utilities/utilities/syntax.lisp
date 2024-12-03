@@ -36,7 +36,7 @@ to `*package*`. Example call:
              :category syntax)
   "Like LAMBDA, but 4 characters shorter."
   #>%%%>
-  (defmacro fn (name lambda-list &body body)
+  (defmacro fn (lambda-list &body body)
     %%DOC
-    `(lambda ,name ,lambda-list ,@body))
+    `(lambda ,lambda-list ,@body))
   %%%)
