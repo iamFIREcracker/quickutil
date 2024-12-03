@@ -221,7 +221,7 @@ into UNDEFUN and DEFMACRO into UNDEFMACRO"
   #>%%%>
   (defmacro undefun (name lambda-list &body body)
     %%DOC
-    (declare (ignore lamda-list body))
+    (declare (ignore lambda-list body))
     `(fmakunbound ',name))
   %%%)
 
@@ -238,7 +238,7 @@ into UNDEFUN and DEFMACRO into UNDEFMACRO"
   #>%%%>
   (defmacro undefmacro (name lambda-list &body body)
     %%DOC
-    (declare (ignore lamda-list body))
+    (declare (ignore lambda-list body))
     `(fmakunbound ',name))
   %%%)
 
@@ -286,8 +286,8 @@ DEFCONSTANT into UNDEFVAR"
   #>%%%>
   (defmacro undefconstant (name value &optional (doc nil))
     %%DOC
-    (declare (ignore val doc))
-    `(makunbound ',var))
+    (declare (ignore value doc))
+    `(makunbound ',name))
   %%%)
 
 (defutil undefpackage (:version (1 . 0)
