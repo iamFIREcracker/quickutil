@@ -391,12 +391,12 @@ Examples:
   #>%%%>
   (defmacro continuable (&body body)
     %%DOC
-    (let1 report "Continue."
+    (let1 report-args (list "Continue.")
       (if (eq (caar body) :report)
-        (setf report (cadar body) body (nthcdr 2 body)))
+        (setf report-args (cdar body) body (cdr body)))
       `(restart-case
          (progn ,@body)
-         (continue () :report ,report))))
+         (continue () :report ,@report-args))))
   %%%)
 
 (defutil retriable (:version (1 . 0)
@@ -429,9 +429,9 @@ Examples:
   #>%%%>
   (defmacro retriable (&body body)
     %%DOC
-    (let1 report "Retry."
+    (let1 report-args (list "Retry.")
       (if (eq (caar body) :report)
-        (setf report (cadar body) body (nthcdr 2 body)))
-      `(loop (with-simple-restart (retry ,report)
+        (setf report-args (cdar body) body (cdr body)))
+      `(loop (with-simple-restart (retry ,@report-args)
                (return (progn ,@body))))))
   %%%)
