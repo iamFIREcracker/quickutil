@@ -44,6 +44,7 @@
                              (:file "io")
                              (:file "syntax")
                              (:file "abbr")
+                             (:file "bindings")
                              (:module split-sequence
                               :serial t
                               :components ((:file "split-sequence")))
