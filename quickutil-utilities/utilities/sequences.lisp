@@ -41,7 +41,7 @@
   #>%%%>
   (defun take (n sequence)
     %%DOC
-    (subseq sequence 0 n))
+    (subseq sequence 0 (min (length sequence) n)))
   %%%)
 
 (defutil drop (:version (1 . 0)
