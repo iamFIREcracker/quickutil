@@ -208,6 +208,29 @@ BND* will expand to a DESTRUCTURING-BIND call:
             '(setf ,name))))))
   %%%)
 
+(defutil zapf (:version (1 . 0)
+               :depends-on nil
+               :provides nil
+               :category language)
+  "Generic place modify macro, like PUSH or INCF, which sets `place`
+equal to (funcall function place).
+
+Here is how INCF and PUSH can be implemented using ZAPF:
+
+(incf x) ≡ (zapf x #'1)
+(incf x 2) ≡ (zapf x (lambda (x) (+ x 2)))
+(push \"foo\" x) ≡ (zapf x (lambda (x) (cons \"foo\" 2)))
+
+Additional reading:
+- https://stevelosh.com/blog/2016/08/playing-with-syntax/
+- https://malisper.me/zap/"
+  #>%%%>
+  (define-modify-macro zapf (function)
+    (lambda (value function)
+      (funcall function value))
+    %%DOC)
+  %%%)
+
 (defutil undefun (:version (1 . 0)
                   :depends-on ()
                   :provides ()
