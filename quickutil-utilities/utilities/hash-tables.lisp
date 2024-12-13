@@ -32,3 +32,31 @@
     %%DOC
     `(loop :for ,key :being :the :hash-keys :of ,table :using (hash-value ,value) :do ,@body ,@(when result? `(:finally (return ,result)))))
   %%%)
+
+(defutil dohashk (:version (1 . 0)
+                  :category (hash-tables orthogonality))
+  "Iterate over the hash table `table`, executing `body`, with
+`key` bound to the keys of the hash table.
+
+Return `result` from the iteration form."
+  #>%%%>
+  (defmacro dohashk ((key table &optional (result nil result?)) &body body)
+    %%DOC
+    `(loop
+       :for ,key :being :the :hash-keys :of ,table
+       :do ,@body ,@(when result? `(:finally (return ,result)))))
+  %%%)
+
+(defutil dohashv (:version (1 . 0)
+                 :category (hash-tables orthogonality))
+  "Iterate over the hash table `table`, executing `body`, with 
+`value` bound to the values of the hash table.
+
+Return `result` from the iteration form."
+  #>%%%>
+  (defmacro dohashv ((value table &optional (result nil result?)) &body body)
+    %%DOC
+    `(loop
+       :for ,value :being :the :hash-values :of ,table 
+       :do ,@body ,@(when result? `(:finally (return ,result)))))
+  %%%)
