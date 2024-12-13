@@ -411,9 +411,8 @@ Examples:
     (let1 report-args (list "Continue.")
       (if (eq (caar body) :report)
         (setf report-args (cdar body) body (cdr body)))
-      `(restart-case
-         (progn ,@body)
-         (continue () :report ,@report-args))))
+      `(with-simple-restart (continue ,@report-args)
+         ,@body)))
   %%%)
 
 (defutil retriable (:version (1 . 0)
