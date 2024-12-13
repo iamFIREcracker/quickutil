@@ -68,7 +68,7 @@ lexical environmnet."
                   :depends-on (let1 aif with-gensyms)
                   :category (language misc))
   "Run `body` in an environment where the symbols COLLECT!, APPEND!, ADJOIN!,
-SUM!, MULTIPLY!, COUNT!, MINIMIZE!, MAXIMIZE!, ALWAYS!, NEVER!, THEREIS!, and SPR! are
+PUSH!, SUM!, MULTIPLY!, COUNT!, MINIMIZE!, MAXIMIZE!, ALWAYS!, NEVER!, THEREIS!, and SPR! are
 bound to functions that can be used to collect / append, sum, multiply, count,
 minimize or maximize things respectively.
 
@@ -104,7 +104,9 @@ Examples:
   ;; Signals an ERROR: Cannot use COUNT! together with SUM!
   "
   #>%%%>
-  (defparameter *looping-reduce-keywords*  '(collect! append! adjoin!
+  (defparameter *looping-reduce-keywords*  '(collect! append!
+                                             adjoin!
+                                             push!
                                              sum! multiply!
                                              count!
                                              minimize!
@@ -127,14 +129,18 @@ Examples:
 
   (defun %assert-compatible-reduce-keywords (keywords)
     "Assert LOOPING reduce functions `keywords` are compatible with one another
-E.g. COLLECT! is compatible with APPEND!, or ADJOIN!, but not with SUM!"
+E.g. COLLECT! is compatible with APPEND!, but not with SUM!"
     (flet ((incompatible-keyword! (k rest)
              (ecase k
-               ((collect! append! adjoin!) (aif (find-if (lambda (k1) (and (not (eql k1 'collect!))
-                                                                           (not (eql k1 'append!))
-                                                                           (not (eql k1 'adjoin!))))
-                                                         rest)
-                                             (error "Cannot use ~A together with ~A" it k)))
+               ((collect! append!)
+                (aif (find-if (lambda (k1) (and (not (eql k1 'collect!))
+                                                (not (eql k1 'append!))))
+                              rest)
+                  (error "Cannot use ~A together with ~A" it k)))
+               (adjoin!  (aif (find 'adjoin! rest :test-not 'eq)
+                           (error "Cannot use ~A together with ~A" it k)))
+               (push!  (aif (find 'push! rest :test-not 'eq)
+                         (error "Cannot use ~A together with ~A" it k)))
                (sum! (aif (find 'sum! rest :test-not 'eq)
                        (error "Cannot use ~A together with ~A" it k)))
                (multiply! (aif (find 'multiply! rest :test-not 'eq)
@@ -160,7 +166,7 @@ E.g. COLLECT! is compatible with APPEND!, or ADJOIN!, but not with SUM!"
  E.g. when COLLECT!-ing, the initial value will be NIL; when SUM!-ing, the
  initial value will be 0"
     (ecase (car keywords)
-      ((collect! append! adjoin! minimize! maximize!) nil)
+      ((collect! append! adjoin! push! minimize! maximize!) nil)
       ((sum! count!) 0)
       (multiply! 1)
       (always! t)
@@ -184,6 +190,9 @@ E.g. COLLECT! is compatible with APPEND!, or ADJOIN!, but not with SUM!"
     (:method ((k (eql 'adjoin!)) result last short-circuit-tag)
       `(,(intern "ADJOIN!") (item &rest adjoin-args)
          (setf ,result (apply #'adjoin item ,result adjoin-args))))
+    (:method ((k (eql 'push!)) result last short-circuit-tag)
+      `(,(intern "PUSH!") (item)
+         (setf ,result (cons item ,result))))
     (:method ((k (eql 'sum!)) result last short-circuit-tag)
       `(,(intern "SUM!") (item)
          (incf ,result item)))
