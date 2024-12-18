@@ -190,3 +190,26 @@ time."
       `(block nil
          (map nil (lambda (,@vars) ,@body) ,@seqs))))
   %%%)
+
+(defutil doeseq (:version (1 . 0)
+                 :depends-on once-only
+                 :category sequences)
+  "(doeseq (i v seq) ...) ≡ (doseq ((i v) (enumerate seq)) ...)"
+  #>%%%>
+  (defmacro doeseq ((enum-bind var seq &optional (result nil result?)) &body body)
+    %%DOC
+    (once-only (seq)
+      (let ((enum-var (if (listp enum-bind) (car enum-bind)))
+            (enum-start (if (listp enum-bind) (cadr enum-bind 0))))
+        `(etypecase ,seq
+           (list (loop
+                   :for ,enum-var :from ,enum-start
+                   :for ,var :in ,seq :do
+                   ,@body
+                   ,@(when result? `(:finally (return ,result)))))
+           (sequence (loop
+                       :for ,enum-var :from ,enum-start
+                       :for ,var :across ,seq :do
+                       ,@body
+                       ,@(when result? `(:finally (return ,result)))))))))
+  %%%)
