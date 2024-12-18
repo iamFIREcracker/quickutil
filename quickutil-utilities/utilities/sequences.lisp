@@ -160,12 +160,33 @@ defined by the equivalence relation `equiv`."
 (defutil doseq (:version (1 . 0)
                 :depends-on once-only
                 :category sequences)
-  "Iterate across the sequence `seq`, binding the variable `var` to
-each element of the sequence and executing `body`. Return the value
-`return` from the iteration form.
+  "Executes `body` once for each element of `seq`, with `var` bound to the element.
+Then `result` is returned.
 
 Note: DOSEQ expands to a LOOP form, so `var` can either be a symbol, or a
-lambda-list
+lambda-list.
+
+Examples:
+
+    ;; Iterate a LIST
+    (doseq (x '(1 2 3 4)) (prin1 x) (princ \" \"))
+    >> 1 2 3 4
+    => NIL
+
+    ;; Iterate a SEQUENCE
+    (doseq (x #(1 2 3 4)) (prin1 x) (princ \" \"))
+    >> 1 2 3 4
+    => NIL
+
+    ;; Return form
+    (doseq (x '(1 2 3 4) 'ret-form) (prin1 x) (princ \" \"))
+    >> 1 2 3 4
+    => RET-FORM
+
+    ;; Iteration with structural binding
+    (doseq ((x _) '((1 a) (2 b) (3 c) (4 d)) 'ret-form) (prin1 x) (princ \" \"))
+    >> 1 2 3 4
+    => RET-FORM
 "
   #>%%%>
   (defmacro doseq ((var seq &optional (result nil result?)) &body body)
@@ -179,14 +200,21 @@ lambda-list
 (defutil doseqs (:version (1 . 0)
                  :depends-on once-only
                  :category sequences)
-  "Like DOSEQ, except this can iterate over multiple sequences at the same
-time."
+  "Like DOSEQ, except DOSEQS can iterate over multiple sequences in parallel
+at the same time (it will stop looping as soon as one of the input sequences is
+exhausted).
+
+Unlike DOSEQ, DOSEQS does not have support for explicitly returning a value at
+the end of the iteration (e.g., via `result` form); this means DOSEQS will
+always return NIL.
+
+Also, unlike DOSEQ, DOSEQS does not expand into a LOOP form which means `var1`,
+`var2`, ..., all need to be symbols."
   #>%%%>
   (defmacro doseqs (((var1 seq1) (var2 seq2) &rest var-seq-specs) &body body)
     %%DOC
     (let* ((vars (list* var1 var2 (mapcar #'car var-seq-specs)))
            (seqs (list* seq1 seq2 (mapcar #'cadr var-seq-specs))))
-
       `(block nil
          (map nil (lambda (,@vars) ,@body) ,@seqs))))
   %%%)
@@ -194,21 +222,43 @@ time."
 (defutil doeseq (:version (1 . 0)
                  :depends-on once-only
                  :category sequences)
-  "(doeseq (i v seq) ...) ≡ (doseq ((i v) (enumerate seq)) ...)"
+  "Executes `body` once for each element of `seq`, with `var` bound to the element,
+and `count` bound to increasing integer values starting from 0.  Then `result`
+is returned.
+
+Note: it's possible to change the count start value by passing in a LIST,
+instad of a symbol, where the first element is the name of count variable, and
+the second is the count start value.
+
+Note: DOESEQ expands to a LOOP form, so `var` can either be a symbol, or a
+lambda-list.
+
+Examples:
+
+    ;; Count starting from 0
+    (doeseq (i x '(a b c d)) (prin1 i) (princ \" \") (prin1 x) (princ \" \"))
+    >> 0 A 1 B 2 C 3 D
+    => NIL
+
+    ;; Custom count start 
+    (doeseq ((i 1) x '(a b c d)) (prin1 i) (princ \" \") (prin1 x) (princ \" \"))
+    >> 1 A 2 B 3 C 4 D
+    => NIL
+"
   #>%%%>
-  (defmacro doeseq ((enum-bind var seq &optional (result nil result?)) &body body)
+  (defmacro doeseq ((count var seq &optional (result nil result?)) &body body)
     %%DOC
     (once-only (seq)
-      (let ((enum-var (if (listp enum-bind) (car enum-bind)))
-            (enum-start (if (listp enum-bind) (cadr enum-bind 0))))
+      (let ((count-var (if (atom count) count (car count)))
+            (count-start (if (atom count) 0 (cadr count))))
         `(etypecase ,seq
            (list (loop
-                   :for ,enum-var :from ,enum-start
+                   :for ,count-var :from ,count-start
                    :for ,var :in ,seq :do
                    ,@body
                    ,@(when result? `(:finally (return ,result)))))
            (sequence (loop
-                       :for ,enum-var :from ,enum-start
+                       :for ,count-var :from ,count-start
                        :for ,var :across ,seq :do
                        ,@body
                        ,@(when result? `(:finally (return ,result)))))))))
