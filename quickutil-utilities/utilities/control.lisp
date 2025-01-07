@@ -497,3 +497,58 @@ Examples:
     %%DOC
     `(cond ,@(append clauses `((t (error "None of the specified clauses matched."))))))
   %%%)
+
+(defutil pcase (:version (1 . 0)
+                :category (language)
+                :provides epcase)
+  "PCASE (predicate-case) and EPCASE are macros that allow the conditional
+execution of a body of forms in a clause that is selected by matching `datum`
+against the clause key using `predicate`.
+
+Arguments:
+
+predicate - A function of two arguments that compares `datum` with each clause key
+datum     - The value to match against clause keys
+clauses   - List of clauses of the form (key form*)
+
+Each clause's key is compared to `datum` using predicate. When a match is found,
+the remaining forms in that clause are evaluated and the last value is returned.
+If no clauses match, PCASE will return NIL, while EPCASE will signal a non
+coninuable error.
+
+Examples:
+
+    ;; String matching example
+    (pcase string= gate
+      (\"AND\" (print 'and-gate))
+      (\"OR\"  (print 'or-gate))
+      (\"XOR\" (print 'xor-gate)))
+
+    ;; Sequence prefix matching
+    (pcase mismatch command
+      (\"help\"    (show-help))
+      (\"version\" (show-version))
+      (\"quit\"    (quit-application)))
+
+    ;; Custom predicate example
+    (pcase (lambda (x y) (< (abs (- x y)) 0.001))
+       value
+       (1.0 \"approximately one\")
+       (2.0 \"approximately two\"))
+
+Notes:
+- Datum is evaluated exactly once"
+  #>%%%>
+  (defmacro pcase (predicate datum &rest clauses)
+    %%DOC
+    (let* (($datum (gensym "datum"))
+           (clauses (loop :for cls :in clauses
+                          :collect (destructuring-bind (test &rest rest) cls
+                                     `((,predicate ,$datum ,test) ,@rest)))))
+      `(let ((,$datum ,datum))
+         (cond ,@clauses))))
+
+  (defmacro epcase (predicate datum &rest clauses)
+    %%DOC
+    `(pcase ,predicate ,datum ,@(append clauses `((t (error "None of the specified clauses matched."))))))
+  %%%)
