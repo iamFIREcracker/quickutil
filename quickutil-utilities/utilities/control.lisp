@@ -464,3 +464,36 @@ Examples:
       `(loop (with-simple-restart (retry ,@report-args)
                (return (progn ,@body))))))
   %%%)
+
+(defutil econd (:version (1 . 0)
+                :category (language))
+  "Like COND, except ECOND will signal an ERROR if none of the `clauses` match.
+ECOND is to COND what ECASE is to CASE.
+
+Each clause should be of the form (test-form form*), where test-form is evaluated
+first, and if it returns true, the remaining forms in that clause are evaluated
+and the last value is returned.
+
+If no test-form evaluates to true, ECOND signals an error, unlike COND which
+would return NIL.
+
+Examples:
+
+    (econd ((> x 10) (print \"Greater than 10\"))
+           ((< x 0)  (print \"Negative\")))
+    ;; Signals error if x is between 0 and 10 inclusive
+
+    (econd ((null lst) nil)
+           ((consp lst) (car lst)))
+    ;; Signals error if lst is neither NIL nor a CONS
+
+    ;; Compare with regular COND:
+    (cond ((> x 10) (print \"Greater than 10\"))
+          ((< x 0)  (print \"Negative\")))
+    ;; Returns NIL if x is between 0 and 10 inclusive
+"
+  #>%%%>
+  (defmacro econd (&rest clauses)
+    %%DOC
+    `(cond ,@(append clauses `((t (error "None of the specified clauses matched."))))))
+  %%%)
