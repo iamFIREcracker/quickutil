@@ -433,6 +433,44 @@ Example
     `(loop :for ,var :on ,list :do ,@body ,@(when result? `(:finally (return ,result)))))
   %%%)
 
+(defutil doesublists (:version (1 . 0)
+                      :category lists)
+  "Executes `body` once for each sublist of `list`, with `var` bound to the sublist,
+and `count` bound to increasing integer values starting from 0.  Then `result`
+is returned.
+
+Note: it's possible to change the count start value by passing in a LIST,
+instad of a symbol, where the first element is the name of count variable, and
+the second is the count start value.
+
+Note: DOESUBLISTS expands to a LOOP form, so `var` can either be a symbol, or a
+lambda-list.
+
+Examples:
+
+    ;; Count starting from 0
+    (doeseq (i x '(a b c d)) (prin1 i) (princ \" \") (prin1 x) (princ \" \"))
+    >> 0 A 1 B 2 C 3 D
+    => NIL
+
+    ;; Custom count start
+    (doeseq ((i 1) x '(a b c d)) (prin1 i) (princ \" \") (prin1 x) (princ \" \"))
+    >> 1 A 2 B 3 C 4 D
+    => NIL
+"
+  #>%%%>
+  (defmacro doesublists ((count var list &optional (result nil result?)) &body body)
+    %%DOC
+    (once-only (list)
+      (let ((count-var (if (atom count) count (car count)))
+            (count-start (if (atom count) 0 (cadr count))))
+        `(loop
+           :for ,count-var :from ,count-start
+           :for ,var :on ,list :do
+           ,@body
+           ,@(when result? `(:finally (return ,result)))))))
+  %%%)
+
 
 (defutil plist-keys (:version (1 . 0)
                      :category (lists plists))
