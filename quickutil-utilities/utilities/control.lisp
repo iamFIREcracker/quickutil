@@ -262,15 +262,19 @@ E.g. COLLECT! is compatible with APPEND!, but not with SUM!"
 
 `bindings` should contain a list of symbols and (optional) starting values.
 
-In `body` the symbol `recur` will be bound to the function for recurring."
+In `body` the symbol `recur` will be bound to the function for recurring.
+
+Note: RECURSIVELY expansion is wrapped inside a NIL BLOCK, which makes it super
+convinient to break out of the recursion loop with a simple call to RETURN."
   #>%%%>
   (defmacro recursively (bindings &body body)
     %%DOC
     (let ((names (mapcar #'(lambda (b) (if (atom b) b (first b))) bindings))
           (values (mapcar #'(lambda (b) (if (atom b) nil (second b))) bindings)))
-      `(labels ((,(intern "RECUR") (,@names)
-                 ,@body))
-         (,(intern "RECUR") ,@values))))
+      `(block nil
+         (labels ((,(intern "RECUR") (,@names)
+                   ,@body))
+           (,(intern "RECUR") ,@values)))))
   %%%)
 
 
