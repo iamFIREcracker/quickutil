@@ -552,3 +552,61 @@ Notes:
     %%DOC
     `(pcase ,predicate ,datum ,@(append clauses `((t (error "None of the specified clauses matched."))))))
   %%%)
+
+
+(defutil when-not-seen (:version (1 . 0)
+                        :depends-on (with-gensyms)
+                        :category (language))
+  "Runs `body` if the LIST `key` created via `key-parts` is not found
+inside `seen`.
+
+If `body` runs, a new entry is added to `seen` to associate `cost` with `key`.
+
+Notes:
+- Inside `body`, the function FORGET can be used to remove the current key from `seen`.
+- `body` is wrapped inside a BLOCK named WHEN-NOT-SEEN-OR-BETTER.
+"
+  #>%%%>
+  (defmacro when-not-seen ((seen &rest key-parts) &body body)
+   %%DOC
+   (with-gensyms (seen$ key$ existing-value)
+     `(let* ((,seen$ ,seen)
+             (,key$ (list ,@key-parts))
+             (,existing-value (gethash ,key$ ,seen$)))
+        (flet ((,(intern "FORGET") () (remhash ,key$ ,seen$)))
+          (when (null ,existing-value)
+            (setf (gethash ,key$ ,seen$) t)
+            (block when-not-seen
+              ,@body))))))
+  %%%)
+
+
+(defutil when-not-seen-or-better (:version (1 . 0)
+                                  :depends-on (with-gensyms)
+                                  :category (language))
+  "Runs `body` if the LIST `key` created via `key-parts` is not found
+inside `seen` or if `cost` is `betterp` the value found.
+
+If `body` runs, a new entry is added to `seen` to associate `cost` with `key`.
+
+This macro is particularly useful in search algorithms where you want to avoid
+exploring previously seen states unless you have a better cost.
+
+Notes:
+- Inside `body`, the function FORGET can be used to remove the current key from `seen`.
+- `body` is wrapped inside a BLOCK named WHEN-NOT-SEEN-OR-BETTER.
+"
+  #>%%%>
+  (defmacro when-not-seen-or-better ((seen betterp cost &rest key-parts) &body body)
+   %%DOC
+   (with-gensyms (seen$ key$ existing-value)
+     `(let* ((,seen$ ,seen)
+             (,key$ (list ,@key-parts))
+             (,existing-value (gethash ,key$ ,seen$)))
+        (flet ((forget () (remhash ,key$ ,seen$)))
+          (when (or (null ,existing-value)
+                    (funcall #',betterp ,cost ,existing-value))
+            (setf (gethash ,key$ ,seen$) ,cost)
+            (block when-not-seen-or-better
+              ,@body))))))
+  %%%)
